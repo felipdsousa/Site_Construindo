@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Texto Movimento Contínuo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    /* Reset básico */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Permanent Marker', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Container do vídeo */
+    .video-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+    }
+
+    .datetime {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      color: white;
+      font-size: 0.8rem;
+      z-index: 999;
+      padding: 0.5rem;
+    }
+
+    .footer-buttons {
+      position: fixed;
+      bottom: 15px;
+      right: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .footer-buttons button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.3s, opacity 0.3s;
+      min-width: 40px;
+    }
+
+    .footer-buttons button:hover {
+      transform: scale(1.2);
+      opacity: 0.8;
+    }
+
+  
+  .button-porão {
+  position: fixed;
+  color: white;
+  top: 50%;
+  left: 50%;
+  border-radius: 5px;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.5);
+  max-width: 300px;
+  padding: 0 50px;
+    font-size: 0.2rem;
+  transform: translate(-50%, -50%); /* Para centralizar perfeitamente */
+  z-index: 9999; /* Certifique-se de que o botão fique sobre outros elementos */
+}
+
+     .button-porão button {
+      background: rgba(0, 0, 0, 0.0);;
+      border: none;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.3s, opacity 0.3s;
+      min-width: 40px;
+    }
+    .sound-button:hover {
+      transform: scale(1.2);
+      opacity: 0.8;
+    }
+
+    /* Estilo do boneco */
+    .character {
+      position: fixed;
+      bottom: 15px;
+      left: 20px;
+      width: 30px;
+      height: 30px;
+      background: none;
+      border-radius: 20%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0);
+      cursor: pointer;
+    }
+
+    .character i {
+      font-size: 2rem;
+      color: white;
+    }
+
+    /* Novo estilo para os textos ao lado do boneco */
+    .character-text-container {
+      position: fixed;
+      bottom: 15px;
+      left: 70px; /* Lado direito do boneco */
+      color: white;
+      font-size: 0.2rem;
+      background: rgba(0, 0, 0, 0.0);
+      padding: 09px;
+      border-radius: 5px;
+      box-shadow: 0 0 60px rgba(0, 0, 0, 0.5);
+      max-width: 280px;
+      z-index: 10;
+    }
+  
+  .character-icon {
+  max-width: 100%; /* Adapta ao contêiner */
+  height: auto; /* Mantém a proporção */
+  display: block; /* Remove espaços extras */
+}
+
+  </style>
+</head>
+<body>
+  <div class="video-container">
+    <video id="bg-video" poster="poster_image.jpg" autoplay muted loop playsinline preload="auto">
+      <source src="video_teste_3.mp4" type="video/mp4">
+      <source src="video_teste_3.webm" type="video/webm">
+      Seu navegador não suporta vídeos HTML5.
+    </video>
+  </div>
+
+  
+  <!-- Botão Acessar Porão -->
+   <div class="button-porão">
+  <nav>
+    <button id="button-porão" aria-label="Acessar Porão" onclick="location.href='porao.html'">♤ Acessar Porão</button>
+  </nav>
+   </div>
+  
+  <div class="datetime" id="datetime"></div>
+
+  <div class="footer-buttons">
+    <button id="button-up" aria-label="Subir"><i class="fas fa-arrow-up"></i></button>
+    <button id="button-instagram" aria-label="Instagram"><i class="fab fa-instagram"></i></button>
+    <button id="button-info" aria-label="Informações"><i class="fas fa-info-circle"></i></button>
+    <button id="sound-button" aria-label="Controle de Som"><i class="fas fa-volume-mute"></i></button>
+  </div>
+
+  <!-- Boneco Estilizado -->
+  <div class="character" id="character">
+    <img src="caelum.png" alt="Ícone do personagem" class="character-icon">
+  </div>
+
+  <!-- Textos ao lado do boneco -->
+  <div class="character-text-container" id="character-text-container">
+    <p id="typed-text"></p>
+  </div>
+
+  <script>
+    // Atualiza data e hora
+    function updateDateTime() {
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = now.getFullYear();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('datetime').textContent = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    }
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+
+    // Instagram
+    document.getElementById('button-instagram').addEventListener('click', () => {
+      window.open('https://www.instagram.com/felipdsousa/', '_blank');
+    });
+
+    // Controle de som
+    const video = document.getElementById('bg-video');
+    const soundButton = document.getElementById('sound-button');
+    const icon = soundButton.querySelector('i');
+
+    if (video.muted) {
+      icon.classList.add('fa-volume-mute');
+    } else {
+      icon.classList.add('fa-volume-up');
+    }
+
+    soundButton.addEventListener('click', () => {
+      video.muted = !video.muted;
+      icon.classList.toggle('fa-volume-mute');
+      icon.classList.toggle('fa-volume-up');
+    });
+
+    // Fade-in do vídeo
+    video.addEventListener('loadeddata', () => {
+      video.style.opacity = 1;
+    });
+
+    // Função para exibir texto com efeito de digitação
+    function typeWriter(elementId, text, speed, callback) {
+      let i = 0;
+      function type() {
+        if (i < text.length) {
+          document.getElementById(elementId).textContent += text.charAt(i);
+          i++;
+          setTimeout(type, speed);
+        } else if (callback) {
+          setTimeout(callback, 1000); // Aguarda 1 segundo antes de executar o próximo texto
+        }
+      }
+      type();
+    }
+
+    // Função typeWriter com atraso na digitação
+function typeWriter(elementId, text, speed, callback) {
+  let i = 0;
+  let element = document.getElementById(elementId);
+  element.textContent = ""; // Limpar o texto atual antes de começar a digitar
+  function typing() {
+    if (i < text.length) {
+      element.textContent += text.charAt(i);
+      i++;
+      setTimeout(typing, speed);
+    } else {
+      // Quando a digitação estiver completa, chama o callback
+      if (callback) callback();
+    }
+  }
+  typing();
+}
+
+// Texto a ser exibido
+    const textoParaExibir = "Bem-vindo ao meu universo. Cada detalhe aqui foi pensado para você.";
+    const segundoTexto = "Explore este espaço. Descubra novos detalhes. Sinta-se inspirado a olhar além da superfície.";
+    const terceiroTexto = "Aproveite";
+
+// Exibir o primeiro texto após 2 segundos
+setTimeout(() => {
+  typeWriter("typed-text", textoParaExibir, 100, () => {
+    // Exibir o segundo texto após o primeiro
+    setTimeout(() => {
+      document.getElementById("typed-text").textContent = ""; // Limpa o primeiro texto
+      typeWriter("typed-text", segundoTexto, 100, () => {
+        // Exibir o terceiro texto após o segundo
+        setTimeout(() => {
+          document.getElementById("typed-text").textContent = ""; // Limpa o segundo texto
+          typeWriter("typed-text", terceiroTexto, 100, () => {
+            // Limpar o terceiro texto após 3 segundos
+            setTimeout(() => {
+              document.getElementById("typed-text").textContent = ""; // Limpa o terceiro texto após 3 segundos
+            }, 3000); // 3 segundos após o término do terceiro texto
+          });
+        }, 5000); // 5 segundos após o segundo texto
+      });
+    }, 5000); // 5 segundos após o primeiro texto
+  });
+}, 2000); // 2 segundos de atraso antes de começar a exibir o primeiro texto
+  
+  </script>
+</body>
+</html>
